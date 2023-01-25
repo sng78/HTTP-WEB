@@ -1,10 +1,14 @@
 package ru.netology.server;
 
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -38,7 +42,9 @@ public class Handler implements Runnable {
                     continue;
                 }
 
-                final String path = parts[1];
+                // getting the request path and parameters from Query String
+                final String path = new URIBuilder(parts[1]).getPath();
+                final List<NameValuePair> pathParams = new URIBuilder(parts[1]).getQueryParams();
 
                 if (!validPaths.contains(path)) {
                     out.write((
@@ -83,8 +89,12 @@ public class Handler implements Runnable {
                 ).getBytes());
                 Files.copy(filePath, out);
                 out.flush();
+                System.out.println("\n" + "---Путь запроса");
+                System.out.println(path); //output to the console request path
+                System.out.println("\n" + "---Параметры из Query String");
+                pathParams.forEach(System.out::println); //output to the console parameters from Query String
             }
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
